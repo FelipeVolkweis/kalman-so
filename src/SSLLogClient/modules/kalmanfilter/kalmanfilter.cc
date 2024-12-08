@@ -1,7 +1,7 @@
 #include <SSLLogClient/modules/kalmanfilter/kalmanfilter.hh>
 
 #define DELTA_T 0.0016 // 16 ms
-#define SIGMA 0.1
+#define SIGMA 0.00042
 
 KalmanFilter::KalmanFilter() {
     A_ = Eigen::MatrixXf(STATE_SIZE, STATE_SIZE);

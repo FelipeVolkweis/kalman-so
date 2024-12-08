@@ -58,6 +58,7 @@ private:
     SSL_GeometryData geometry_;
 
     QFile file_;
+    qint64 lastMessageTimestamp_ = 0;
 };
 
 #endif

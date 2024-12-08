@@ -8,6 +8,7 @@
 #include <SSLLogClient/modules/kalmanfilter/kalmanfilter.hh>
 #include <SSLLogClient/modules/logreader/logreader.hh>
 #include <SSLLogClient/modules/tracker/trackeddetection.hh>
+#include <SSLLogClient/types/worlddata.hh>
 
 class SSLLogClient : public QObject {
     Q_OBJECT
@@ -25,6 +26,7 @@ private:
     GUI *gui_;
     LogReader *logReader_;
     QThread *logReaderThread_;
+    WorldData world_;
 
     bool isRunning_;
     QTimer *timer_;

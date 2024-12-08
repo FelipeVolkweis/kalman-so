@@ -1,6 +1,6 @@
 #include <SSLLogClient/modules/tracker/trackeddetection.hh>
 
-TrackedDetection::TrackedDetection() {}
+TrackedDetection::TrackedDetection(WorldData &worldData) : worldData_(worldData) {}
 
 void TrackedDetection::process(SSL_DetectionFrame detection) {
     for (int i = 0; i < detection.robots_blue_size(); i++) {
@@ -9,9 +9,11 @@ void TrackedDetection::process(SSL_DetectionFrame detection) {
         data.x = robot.x();
         data.y = robot.y();
         data.theta = robot.orientation();
+        data.id = robot.robot_id();
 
         if (!blueTeam_.contains(robot.robot_id())) {
-            blueTeam_.insert(robot.robot_id(), std::make_shared<Object>());
+            blueTeam_.insert(robot.robot_id(),
+                             std::make_shared<Object>(robot.robot_id(), Colors::BLUE));
         }
         blueTeam_[robot.robot_id()]->setData(detection.camera_id(), data);
     }
@@ -22,9 +24,11 @@ void TrackedDetection::process(SSL_DetectionFrame detection) {
         data.x = robot.x();
         data.y = robot.y();
         data.theta = robot.orientation();
+        data.id = robot.robot_id();
 
         if (!yellowTeam_.contains(robot.robot_id())) {
-            yellowTeam_.insert(robot.robot_id(), std::make_shared<Object>());
+            yellowTeam_.insert(robot.robot_id(),
+                               std::make_shared<Object>(robot.robot_id(), Colors::YELLOW));
         }
         yellowTeam_[robot.robot_id()]->setData(detection.camera_id(), data);
     }
@@ -47,4 +51,25 @@ void TrackedDetection::process(SSL_DetectionFrame detection) {
 
     if (detection.balls_size() != 0)
         ball_.process();
+
+    for (auto &robot : blueTeam_) {
+        worldData_.setBlueRobotPosition(robot.get()->id, robot.get()->X, robot.get()->Y,
+                                        robot.get()->THETA);
+        if (!robot.get()->isValid) {
+            worldData_.setBlueRobotInvalid(robot.get()->id);
+        }
+    }
+
+    for (auto &robot : yellowTeam_) {
+        worldData_.setYellowRobotPosition(robot.get()->id, robot.get()->X, robot.get()->Y,
+                                          robot.get()->THETA);
+        if (!robot.get()->isValid) {
+            worldData_.setYellowRobotInvalid(robot.get()->id);
+        }
+    }
+
+    worldData_.setBallPosition(ball_.X, ball_.Y);
+    if (!ball_.isValid) {
+        worldData_.setBallInvalid();
+    }
 }

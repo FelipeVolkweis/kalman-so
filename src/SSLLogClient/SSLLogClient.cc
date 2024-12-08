@@ -2,7 +2,8 @@
 
 #define FREQUENCY 60.0
 
-SSLLogClient::SSLLogClient() : isRunning_(false), gui_(nullptr), logReader_(nullptr) {}
+SSLLogClient::SSLLogClient()
+    : isRunning_(false), gui_(nullptr), logReader_(nullptr), trackedDetection_(world_) {}
 
 SSLLogClient::~SSLLogClient() {
     if (gui_) {
@@ -19,7 +20,7 @@ SSLLogClient &SSLLogClient::readFrom(QString fileName) {
 }
 
 SSLLogClient &SSLLogClient::show() {
-    gui_ = new GUI();
+    gui_ = new GUI(world_);
     gui_->resize(640, 480);
     gui_->setWindowTitle("SSL Log Client");
     gui_->show();
@@ -53,24 +54,7 @@ void SSLLogClient::start() {
 
 void SSLLogClient::gameLoop() {
     trackedDetection_.process(logReader_->getDetection());
-    BallData ball{trackedDetection_.getBall().X, trackedDetection_.getBall().Y};
-    gui_->setBall(ball);
-
-    QVector<RobotData> blueTeam;
-    for (const auto &blueRobot : trackedDetection_.getBlueTeam()) {
-        RobotData guiRobot{blueRobot.get()->X, blueRobot.get()->Y, blueRobot.get()->THETA,
-                           blueRobot.get()->id};
-        blueTeam.push_back(guiRobot);
-    }
-    gui_->setBlueTeam(blueTeam);
-
-    QVector<RobotData> yellowTeam;
-    for (const auto &yellowRobot : trackedDetection_.getYellowTeam()) {
-        RobotData guiRobot{yellowRobot.get()->X, yellowRobot.get()->Y, yellowRobot.get()->THETA,
-                           yellowRobot.get()->id};
-        yellowTeam.push_back(guiRobot);
-    }
-    gui_->setYellowTeam(yellowTeam);
+    gui_->update();
 }
 
 void SSLLogClient::stop() {

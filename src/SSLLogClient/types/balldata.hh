@@ -4,6 +4,7 @@
 struct BallData {
     float x, y;
     float vx, vy;
+    bool valid;
 };
 
 #endif // BALLDATA_HH

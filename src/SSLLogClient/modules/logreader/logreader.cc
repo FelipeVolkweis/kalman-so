@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QThread>
 #include <QtEndian>
 
 #include <SSLLogClient/modules/logreader/logreader.hh>
@@ -37,6 +38,7 @@ void LogReader::read() {
             qFromBigEndian<qint32>(reinterpret_cast<const uchar *>(sizeOfMessageBuffer));
 
         message.protobufMessage = file_.read(message.sizeOfMessage);
+        qint64 deltaT = (lastMessageTimestamp_ - message.receiverTimestamp) / 1e6;
 
         switch (message.messageType) {
         case LogTypes::MESSAGE_SSL_VISION_2010:
@@ -58,8 +60,14 @@ void LogReader::read() {
         default:
             break;
         }
-    }
 
+        if (deltaT > 0 && deltaT < 32) {
+            QThread::msleep(deltaT);
+        } else {
+            QThread::msleep(16.66);
+        }
+        lastMessageTimestamp_ = message.receiverTimestamp;
+    }
     emit finished();
 }
 

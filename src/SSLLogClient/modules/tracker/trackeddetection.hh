@@ -6,13 +6,14 @@
 #include <QHash>
 
 #include <SSLLogClient/modules/tracker/object.hh>
+#include <SSLLogClient/types/worlddata.hh>
 
 typedef int RobotID;
 typedef QHash<RobotID, std::shared_ptr<Object>> Team;
 
 class TrackedDetection {
 public:
-    TrackedDetection();
+    TrackedDetection(WorldData &worldData);
 
     void process(SSL_DetectionFrame detectionFrame);
 
@@ -32,6 +33,8 @@ private:
     Team blueTeam_;
     Team yellowTeam_;
     Object ball_;
+
+    WorldData &worldData_;
 };
 
 #endif // TRACKEDDETECTION_HH

@@ -10,6 +10,7 @@ struct RobotData {
     float vx, vy, vtheta;
     Colors::Color color;
     int id;
+    bool valid;
 };
 
 #endif // ROBOTDATA_HH

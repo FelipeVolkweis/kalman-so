@@ -16,7 +16,7 @@ enum ObjectType { BALL = 0, ROBOT = 1 };
 typedef int CameraID;
 
 struct Data {
-    float x, y, theta;
+    float x, y, theta, id;
 };
 
 class Object {
