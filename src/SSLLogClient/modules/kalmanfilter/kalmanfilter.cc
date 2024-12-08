@@ -18,8 +18,8 @@ KalmanFilter::KalmanFilter() {
           0, 0, 1, 0, 0, 0;
 
     float delta_t1 = DELTA_T;
-    float delta_t2 = (1.0/2.0) * DELTA_T * DELTA_T;
-    float delta_t3 = (1.0/3.0) * DELTA_T * DELTA_T * DELTA_T;
+    float delta_t2 = (1.0 / 2.0) * DELTA_T * DELTA_T;
+    float delta_t3 = (1.0 / 3.0) * DELTA_T * DELTA_T * DELTA_T;
 
     R_ = Eigen::MatrixXf(STATE_SIZE, STATE_SIZE);
     R_ << delta_t3, 0, 0, delta_t2, 0, 0,
@@ -29,7 +29,7 @@ KalmanFilter::KalmanFilter() {
           0, 0, 0, 0, delta_t1, 0,
           0, 0, 0, 0, 0, delta_t1;
     R_ *= (SIGMA * SIGMA);
-    
+
     Q_ = Eigen::MatrixXf(MEAS_SIZE, MEAS_SIZE);
     Q_ << 0.1, 0, 0,
           0, 0.1, 0,
@@ -64,6 +64,15 @@ void KalmanFilter::update(Eigen::MatrixXf meas) {
     cov_ = (Eigen::MatrixXf::Identity(STATE_SIZE, STATE_SIZE) - K * C_) * cov_;
 }
 
+void KalmanFilter::update(float x, float y, float theta) {
+    meas_ << x, y, theta;
+    update(meas_);
+}
+
+void KalmanFilter::update(float x, float y) {
+    update(x, y, 0);
+}
+
 Eigen::MatrixXf KalmanFilter::getMean() {
     return mean_;
 }
@@ -76,18 +85,34 @@ Eigen::MatrixXf KalmanFilter::getMeas() {
     return meas_;
 }
 
-QPair<float, float> KalmanFilter::getPosition() {
+QPair<float, float> KalmanFilter::getPosition() const {
     return QPair<float, float>(mean_(X), mean_(Y));
 }
 
-QPair<float, float> KalmanFilter::getVelocity() {
+QPair<float, float> KalmanFilter::getVelocity() const {
     return QPair<float, float>(mean_(VX), mean_(VY));
 }
 
-float KalmanFilter::getOrientation() {
+float KalmanFilter::getOrientation() const {
     return mean_(THETA);
 }
 
-float KalmanFilter::getAngularVelocity() {
+float KalmanFilter::getAngularVelocity() const {
     return mean_(OMEGA);
+}
+
+float KalmanFilter::getXYUncertainty() const {
+    return sqrtf(powf(cov_(X, X), 2) + powf(cov_(Y, Y), 2));
+}
+
+float KalmanFilter::getThetaUncertainty() const {
+    return cov_(THETA, THETA);
+}
+
+float KalmanFilter::getVUncertainty() const {
+    return sqrtf(powf(cov_(VX, VX), 2) + powf(cov_(VY, VY), 2));
+}
+
+float KalmanFilter::getOmegaUncertainty() const {
+    return cov_(OMEGA, OMEGA);
 }

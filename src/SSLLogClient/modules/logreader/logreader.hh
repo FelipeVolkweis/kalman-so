@@ -6,8 +6,8 @@
 #include <3rdparty/proto/pb/ssl_vision_wrapper.pb.h>
 
 #include <QFile>
-#include <QString>
 #include <QMutex>
+#include <QString>
 
 // Frequência com que os dados serão "postados" pelo leitor de logs
 // afeta a velocidade com que novas atualizações são mostradas na GUI
@@ -28,7 +28,7 @@ enum {
 }
 
 struct LogHeader {
-    QByteArray logType; // SSL_LOG_FILE (12 bytes)
+    char logType[12]; // SSL_LOG_FILE (12 bytes)
     qint32 version;
 };
 
@@ -39,13 +39,17 @@ struct LogMessage {
     QByteArray protobufMessage;
 };
 
-class LogReader {
+class LogReader : public QObject {
+    Q_OBJECT
 public:
     LogReader(QString fileName);
     void read();
 
     SSL_DetectionFrame getDetection();
     SSL_GeometryData getGeometry();
+
+signals:
+    void finished();
 
 private:
     QMutex detectionMutex_;

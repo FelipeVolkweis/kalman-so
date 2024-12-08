@@ -1,32 +1,41 @@
 #ifndef KALMANFILTER_HH
 #define KALMANFILTER_HH
 
-#include <eigen3/Eigen/Dense>
-
 #include <QPair>
+
+#include <eigen3/Eigen/Dense>
 
 class KalmanFilter {
 public:
-    const int STATE_SIZE = 6;
-    const int MEAS_SIZE = 3;
+    int STATE_SIZE = 6;
+    int MEAS_SIZE = 3;
 
-    const int X = 0;
-    const int Y = 1;
-    const int THETA = 2;
-    const int VX = 3;
-    const int VY = 4;
-    const int OMEGA = 5;
+    int X = 0;
+    int Y = 1;
+    int THETA = 2;
+    int VX = 3;
+    int VY = 4;
+    int OMEGA = 5;
 
     KalmanFilter();
     void predict();
     void update(Eigen::MatrixXf meas);
-    QPair<float, float> getPosition();
-    QPair<float, float> getVelocity();
-    float getOrientation();
-    float getAngularVelocity();
+    void update(float x, float y, float theta);
+    void update(float x, float y);
+
+    float getXYUncertainty() const;
+    float getThetaUncertainty() const;
+    float getVUncertainty() const;
+    float getOmegaUncertainty() const;
+
+    QPair<float, float> getPosition() const;
+    QPair<float, float> getVelocity() const;
+    float getOrientation() const;
+    float getAngularVelocity() const;
     Eigen::MatrixXf getMean();
     Eigen::MatrixXf getCov();
     Eigen::MatrixXf getMeas();
+
 private:
     Eigen::MatrixXf A_;
     Eigen::MatrixXf C_;

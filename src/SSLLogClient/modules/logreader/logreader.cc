@@ -1,4 +1,5 @@
 #include <QDebug>
+#include <QtEndian>
 
 #include <SSLLogClient/modules/logreader/logreader.hh>
 
@@ -14,27 +15,52 @@ void LogReader::read() {
     LogHeader header;
     LogMessage message;
 
-    file_.read(reinterpret_cast<char *>(&header), sizeof(header));
-    file_.read(reinterpret_cast<char *>(&header), sizeof(header));
+    file_.read(reinterpret_cast<char *>(&(header.logType)), 12);
+    char versionBuffer[sizeof(qint32)] = {0};
+    file_.read(versionBuffer, sizeof(qint32));
+    header.version = qFromBigEndian<qint32>(reinterpret_cast<const uchar *>(versionBuffer));
 
     while (!file_.atEnd()) {
-        file_.read(reinterpret_cast<char *>(&message), sizeof(message));
+        char receiverTimestampBuffer[sizeof(qint64)] = {0};
+        file_.read(receiverTimestampBuffer, sizeof(qint64));
+        message.receiverTimestamp =
+            qFromBigEndian<qint64>(reinterpret_cast<const uchar *>(receiverTimestampBuffer));
+
+        char messageTypeBuffer[sizeof(qint32)] = {0};
+        file_.read(messageTypeBuffer, sizeof(qint32));
+        message.messageType =
+            qFromBigEndian<qint32>(reinterpret_cast<const uchar *>(messageTypeBuffer));
+
+        char sizeOfMessageBuffer[sizeof(qint32)] = {0};
+        file_.read(sizeOfMessageBuffer, sizeof(qint32));
+        message.sizeOfMessage =
+            qFromBigEndian<qint32>(reinterpret_cast<const uchar *>(sizeOfMessageBuffer));
+
+        message.protobufMessage = file_.read(message.sizeOfMessage);
 
         switch (message.messageType) {
         case LogTypes::MESSAGE_SSL_VISION_2010:
-            detectionMutex_.lock();
-            detection_.ParseFromArray(message.protobufMessage.data(), message.sizeOfMessage);
-            detectionMutex_.unlock();
+        case LogTypes::MESSAGE_SSL_VISION_2014: {
+            SSL_WrapperPacket wrapper;
+            wrapper.ParseFromArray(message.protobufMessage.data(), message.sizeOfMessage);
+            if (wrapper.has_detection()) {
+                detectionMutex_.lock();
+                detection_ = wrapper.detection();
+                detectionMutex_.unlock();
+            }
+            if (wrapper.has_geometry()) {
+                geometryMutex_.lock();
+                geometry_ = wrapper.geometry();
+                geometryMutex_.unlock();
+            }
             break;
-        case LogTypes::MESSAGE_SSL_VISION_2014:
-            geometryMutex_.lock();
-            geometry_.ParseFromArray(message.protobufMessage.data(), message.sizeOfMessage);
-            geometryMutex_.unlock();
-            break;
+        }
         default:
             break;
         }
     }
+
+    emit finished();
 }
 
 SSL_DetectionFrame LogReader::getDetection() {
