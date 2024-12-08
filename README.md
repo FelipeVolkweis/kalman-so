@@ -22,7 +22,7 @@ Para compilar o projeto é necessário:
 # No Fedora 40
 No Linux Fedora 40, o procedimento descrito acima ficaria assim (partindo o diretório base):
 
-> sudo dnf install -y cmake gcc-c++ qt5-*-devel protobuf-devel freeglut-devel
+> sudo dnf install -y cmake gcc-c++ qt5-*-devel protobuf-devel freeglut-devel <br/>
 > mkdir build && cd build <br/>
 > cmake .. <br/>
 > make <br/>
