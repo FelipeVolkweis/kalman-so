@@ -1,0 +1,35 @@
+BasedOnStyle: LLVM
+IndentWidth: 4
+AccessModifierOffset: -4
+SpaceBeforeParens: ControlStatementsExceptControlMacros
+PointerAlignment: Right
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Attach
+ColumnLimit: 100
+SeparateDefinitionBlocks: Always
+IncludeIsMainSourceRegex: '([.]cc)$'
+IncludeIsMainRegex: '([.]hh)$'
+
+IncludeBlocks: Regroup
+IncludeCategories:
+  # 3rdparty
+  - Regex:      ^<3rdparty
+    Priority:   1
+  # Qt Libraries
+  - Regex:      ^<Q
+    Priority:   2
+  # OpenGL Libraries
+  - Regex:      ^[<|"]gl
+    Priority:   3
+    # Standard libraries
+  - Regex:      <c|\.h[>|"]$
+    Priority:   4
+    # Libraries that contain slashes, used mainly for generic external libraries
+  - Regex:      /
+    Priority:   5
+  # Other matches
+  - Regex:      .+
+    Priority:   6
+  # SSLLogClient Libraries
+  - Regex:      ^<SSLLogClient
+    Priority:   7

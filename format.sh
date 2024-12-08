@@ -1,0 +1,1 @@
+find src/SSLLogClient/ -iname '*.hh' -o -iname '*.cc' | xargs clang-format -i
